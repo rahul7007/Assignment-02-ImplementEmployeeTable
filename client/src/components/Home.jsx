@@ -9,14 +9,16 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
 import api from '../api/index'
+import './Style.css'
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
-    backgroundColor: theme.palette.common.black,
+    backgroundColor: theme.palette.common.red,
     color: theme.palette.common.white,
   },
   body: {
     fontSize: 14,
+    fontFamily: 'Alatsi',
   },
 }))(TableCell);
 
@@ -33,6 +35,32 @@ const useStyles = makeStyles({
     width: '100%'
   },
 });
+
+const TableBg = {
+    backgroundColor: '#a2cf6e',
+    fontFamily: 'Alatsi',
+    fontSize:'1.3em',
+    width: '33%',
+    borderBottom: 'none'
+}
+
+const inputBox = {
+    fontFamily: 'Alatsi',
+    backgroundPosition: '10px 12px', /* Position the search icon */
+    backgroundRepeat: 'no-repeat', /* Do not repeat the icon image */
+    width: '100%', /* Full-width */
+    fontSize: '1em', /* Increase font-size */
+    padding: '12px 0px 12px 1rem', /* Add some padding */
+    border: '1px solid #ddd', /* Add a grey border */
+  }
+
+  const prvNxtStyle = {
+    color: '#101010',
+    borderRadius: '50%',
+    display: 'inline-block',
+    padding: '13px 19px',
+    border: 'none'
+  }
 
 export default function CustomizedTables() {
 
@@ -57,80 +85,8 @@ export default function CustomizedTables() {
         })
     }, [])
 
-    // console.log("2nd",myarr)
 
-    //implmenting search
-    const  search = (e) => {
-        // if(e.target.value===''){
-        //     setMyarr(myarr1)
-        // }
-        setNext(1)
-        setStopPage(5)
-        nextBtnState(true)
-        prevBtnState(true)
-        if(e.target.value.length === 0){
-            setMyarr(myarr1)
-            nextBtnState(false)
-            // prevBtnState(false)
-        }
-        api.getEmpData(e.target.value).then(res =>{
-           console.log("-->",res)
-           console.log("<--",res.data.success)
-
-
-            try{
-                console.log("Response against id:",res.data.data)
-                if(res.data.data != null){
-                    const pqr = []
-                    pqr.push(res.data.data)
-                    setMyarr(pqr)
-                } else{
-                    const abc = [ 
-                        { eid: 'NA', ename: 'NA', eage: 'NA' }
-                     ]
-                     setMyarr(abc)
-                }
-            } catch{
-                console.log("Not found");
-            }
-        })
-    }
-
-
-    const  searchName = (e) => {
-        // if(e.target.value===''){
-        //     setMyarr(myarr1)
-        // }
-        setNext(1)
-        setStopPage(5)
-        nextBtnState(true)
-        prevBtnState(true)
-        if(e.target.value.length === 0){
-            setMyarr(myarr1)
-            nextBtnState(false)
-        }
-        
-        api.getEmpDataByName(e.target.value).then(res =>{
-            try{
-                console.log("Response against name:",res.data.data)
-                if(res.data.data != null){
-                    let pqr = []
-                    pqr = [...pqr, ...res.data.data]
-                    setMyarr(pqr)
-                } if(res.data.data.length === 0){
-                    const abc = [ 
-                        { eid: 'NA', ename: 'NA', eage: 'NA' }
-                     ]
-                     setMyarr(abc)
-                }
-            } catch{
-                console.log("Not found");
-            }
-        })
-    }
-
-
-    //search for id/name
+    //search by id/name
     const  searchByIdAndName = (e) => {
         setNext(1)
         setStopPage(5)
@@ -141,13 +97,9 @@ export default function CustomizedTables() {
             nextBtnState(false)
         }
 
-        var input = +e.target.value
-
-
+        let input = +e.target.value
 
         if(isNaN(input)){
-            // alert(input)
-            // alert("its a string")
             api.getEmpDataByName(e.target.value).then(res =>{
                 try{
                     console.log("Response against name:",res.data.data)
@@ -167,11 +119,7 @@ export default function CustomizedTables() {
             })            
         }
         else{
-            // alert(input)
-            // alert("its a number")
             api.getEmpDataById(e.target.value).then(res =>{
-                console.log("-->",res)
-                console.log("<--",res.data.success)
      
      
                  try{
@@ -191,24 +139,6 @@ export default function CustomizedTables() {
                  }
              })            
         }
-        
-        // api.getEmpDataByName(e.target.value).then(res =>{
-        //     try{
-        //         console.log("Response against name:",res.data.data)
-        //         if(res.data.data != null){
-        //             let pqr = []
-        //             pqr = [...pqr, ...res.data.data]
-        //             setMyarr(pqr)
-        //         } if(res.data.data.length === 0){
-        //             const abc = [ 
-        //                 { eid: 'NA', ename: 'NA', eage: 'NA' }
-        //              ]
-        //              setMyarr(abc)
-        //         }
-        //     } catch{
-        //         console.log("Not found");
-        //     }
-        // })
     }
 
 
@@ -234,14 +164,12 @@ export default function CustomizedTables() {
 
 
     const paginationPrev = () => {
-        console.log("we'll display from",stopPage-5)
 
         setNext(next-1)
         nextBtnState(false)
         setStopPage(stopPage-5)
     
         api.getPrevPageStack(stopPage-5).then(res =>{
-            console.log("page prev res:", res.data.data);
             try{
                 let pqr= res.data.data.sort((argOne, argTwo) => parseInt(argOne.eid) - parseInt(argTwo.eid))
                 setMyarr(pqr)
@@ -258,12 +186,12 @@ export default function CustomizedTables() {
     }
 
     const sortAge = (e) => {
+        setNext(1)
+        setStopPage(5)
         api.getSortedAge(e.target.value).then(res =>{
             try{
-                console.log("Response against age:",res.data.data)
                 let pqr= res.data.data
                 setMyarr(pqr)
-                console.log("My Arr from sortAge", myarr)
             } catch{
                 console.log("Not found");
             }
@@ -276,46 +204,39 @@ export default function CustomizedTables() {
 
   return(
     <>
-    {/* <input type="text" onChange={search} placeholder="Search for id/names" />
-    <input type="text" onChange={searchName} placeholder="Search for names" />
-    <select onChange={sortAge}>
-        <option value='lowToHigh'>Low to High</option>
-        <option value='highToLow'>High to Low</option>
-    </select> */}
     <TableContainer component={Paper}>
       <Table className={classes.table} aria-label="customized table">
         <TableHead>
             <TableRow>
-            <StyledTableCell align="center">
-            <input type="text" onChange={searchByIdAndName} placeholder="Search for id/names" />
-            </StyledTableCell>
-            <StyledTableCell align="center">
-            <input type="text" onChange={searchName} placeholder="Search for names" />
-            </StyledTableCell>
-            <StyledTableCell align="center">
-            <select onChange={sortAge}>
-                <option value='lowToHigh'>Low to High</option>
-                <option value='highToLow'>High to Low</option>
-            </select>    
+            <StyledTableCell align="center" style={{backgroundColor:'white'}}>
+                <input type="text" onChange={searchByIdAndName} placeholder="Search for id/names" style={inputBox}/>
+                </StyledTableCell>
+                <StyledTableCell align="center" style={{backgroundColor:'white'}}>
+                {/* <input type="text" onChange={searchName} placeholder="Search for names" /> */}
+                </StyledTableCell>
+                <StyledTableCell align="center" style={{backgroundColor:'white'}}>
+                <select onChange={sortAge} style={inputBox} defaultValue="Sort">
+                    <option value='lowToHigh'>Low to High</option>
+                    <option value='highToLow'>High to Low</option>
+                </select>    
             </StyledTableCell>                
                 
             </TableRow> 
           <TableRow>
-            <StyledTableCell align="center">Emp ID</StyledTableCell>
-            <StyledTableCell align="center">Emp Name</StyledTableCell>
-            <StyledTableCell align="center">Emp Age</StyledTableCell>
+            <StyledTableCell align="center" style={TableBg}>Emp ID</StyledTableCell>
+            <StyledTableCell align="center" style={TableBg}>Emp Name</StyledTableCell>
+            <StyledTableCell align="center" style={TableBg}>Emp Age</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-        {/* {console.log("3rd myarr is:",myarr)} */}
 
-          {myarr !== undefined ? myarr.slice(0, 5).map((row) => (
+          {myarr && myarr.slice(0, 5).map((row) => (
             <StyledTableRow key={row.eid}>
               <StyledTableCell align="center">{row.eid}</StyledTableCell>
               <StyledTableCell align="center">{row.ename}</StyledTableCell>
               <StyledTableCell align="center">{row.eage}</StyledTableCell>
             </StyledTableRow>
-          )) : null}
+          ))}
         </TableBody>
       </Table> 
     </TableContainer>
@@ -325,12 +246,14 @@ export default function CustomizedTables() {
       <Table className={classes.table} aria-label="customized table">
         <TableHead>
           <TableRow>
-          <StyledTableCell align="left">
-                <button onClick={paginationPrev} disabled={prevBtn}>Prev</button>
+          <StyledTableCell align="left" style={TableBg}>
+                <button onClick={paginationPrev} style={prvNxtStyle} disabled={prevBtn}>&#8249;</button>
             </StyledTableCell>
-            <StyledTableCell align="right">
-                Page {next} of {maxPageLength} &emsp;&emsp;&emsp;
-                <button onClick={paginationNext} disabled={nextBtn} >Next</button>
+            <StyledTableCell align="center" style={TableBg}>
+                Page {next} of {maxPageLength}
+            </StyledTableCell>
+            <StyledTableCell align="right" style={TableBg}>
+                <button onClick={paginationNext} style={prvNxtStyle} disabled={nextBtn} >&#8250;</button>
             </StyledTableCell>
           </TableRow>
         </TableHead>
