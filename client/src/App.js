@@ -4,7 +4,7 @@ import CustomizedTables from '../src/components/Home'
 function App() {
   return (
     <>
-      <CustomizedTables/>
+      <CustomizedTables />
     </>
   );
 }
