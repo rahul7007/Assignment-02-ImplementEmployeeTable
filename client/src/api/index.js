@@ -10,7 +10,11 @@ export const getEmpDataByName = name => api.get(`/getEmpDataByName/${name}`)
 export const getSortedSalary = filter => api.get(`/getSortedSalary/${filter}`)
 export const getNextPageStack = page => api.get(`/getNextPageStack/${page}`)
 export const getPrevPageStack = page => api.get(`/getPrevPageStack/${page}`)
-
+export const sendSearchResponse = payload => api.post(`/sendSearchResponse`, payload)
+export const getNextSearchPageStack = page => api.get(`/getNextSearchPageStack/${page}`)
+export const getPrevSearchPageStack = page => api.get(`/getPrevSearchPageStack/${page}`)
+export const getSortedNextPageStack = page => api.get(`/getSortedNextPageStack/${page}`)
+export const getSortedPrevPageStack = page => api.get(`/getSortedPrevPageStack/${page}`)
 
 
 const apis = {
@@ -19,7 +23,12 @@ const apis = {
     getEmpDataByName,
     getSortedSalary,
     getNextPageStack,
-    getPrevPageStack
+    getPrevPageStack,
+    sendSearchResponse,
+    getNextSearchPageStack,
+    getPrevSearchPageStack,
+    getSortedNextPageStack,
+    getSortedPrevPageStack
 }
 
 export default apis

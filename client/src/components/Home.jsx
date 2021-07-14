@@ -60,7 +60,7 @@ const prvNxtStyle = {
   padding: "13px 19px",
   border: "none",
 };
-
+var searchNextPage = 0;
 export default function CustomizedTables() {
   const classes = useStyles();
   var [empData, setEmpData] = useState();
@@ -71,6 +71,11 @@ export default function CustomizedTables() {
   const [stopPage, setStopPage] = useState();
   var [nextBtn, nextBtnState] = useState(false);
   var [prevBtn, prevBtnState] = useState(true);
+  const [inpLen, setInpLen] = useState(false);
+  const [isSorted, setSorted] = useState(false);
+  // const [filteredContainer, setFilteredContainer];
+  // const [searchNextPage, setSearchNextPage] = useState(5);
+
   const pageLimit = 5;
 
   useEffect(() => {
@@ -92,17 +97,31 @@ export default function CustomizedTables() {
     if (e.target.value.length === 0) {
       setEmpData(empDataCopy);
       nextBtnState(false);
+      setInpLen(false);
+      setMaxPageLength(Math.ceil(Object.keys(empDataCopy).length / pageLimit));
     }
 
     let input = +e.target.value;
 
     if (isNaN(input)) {
+      setInpLen(true);
       api.getEmpDataByName(e.target.value).then((res) => {
+        setMaxPageLength(Math.ceil(res.data.data.length / pageLimit));
+
         try {
           if (res.data.data != null) {
             let responseContainer = [];
             responseContainer = [...responseContainer, ...res.data.data];
-            setEmpData(responseContainer);
+            console.log("responseContainer", responseContainer);
+            if (responseContainer.length > 5) {
+              nextBtnState(false);
+            }
+
+            const payload = { responseContainer };
+            console.log("sendSearchResponse is going to call");
+            api.sendSearchResponse(payload).then((res) => {
+              console.log(res);
+            });
           }
           if (res.data.data.length === 0) {
             const NA = [{ eid: "NA", ename: "NA", esalary: "NA" }];
@@ -131,40 +150,98 @@ export default function CustomizedTables() {
   };
 
   const paginationNext = () => {
-    setNext(next + 1);
-    prevBtnState(false);
-    setStopPage(stopPage + pageLimit);
-    api.getNextPageStack(stopPage).then((res) => {
-      try {
+    if (isSorted) {
+      console.log("Calling sorted pagination");
+      console.log(empData);
+      searchNextPage = searchNextPage + pageLimit;
+      api.getSortedNextPageStack(searchNextPage).then((res) => {
+        let responseContainer = res.data.data;
+        console.log(responseContainer);
+        setEmpData(responseContainer);
+        if (responseContainer.length <= 5) {
+          nextBtnState(true);
+        }
+        setNext(next + 1);
+        prevBtnState(false);
+      });
+    } else if (inpLen) {
+      console.log("Calling search pagination");
+      searchNextPage = searchNextPage + pageLimit;
+      api.getNextSearchPageStack(searchNextPage).then((res) => {
         let responseContainer = res.data.data;
         setEmpData(responseContainer);
-      } catch (err) {
-        console.log("Not found", err);
-      }
-      res.data.data.map((val) => {
-        if (parseInt(val.eid) === empDataCopy.length) nextBtnState(true);
+        if (responseContainer.length <= 5) {
+          nextBtnState(true);
+        }
+        setNext(next + 1);
+        prevBtnState(false);
       });
-    });
+      // return null;
+    } else {
+      console.log("Calling normal pagination");
+      setNext(next + 1);
+      prevBtnState(false);
+      setStopPage(stopPage + pageLimit);
+      api.getNextPageStack(stopPage).then((res) => {
+        try {
+          let responseContainer = res.data.data;
+          setEmpData(responseContainer);
+        } catch (err) {
+          console.log("Not found", err);
+        }
+        res.data.data.map((val) => {
+          if (parseInt(val.eid) === empDataCopy.length) nextBtnState(true);
+        });
+      });
+    }
   };
 
   const paginationPrev = () => {
-    setNext(next - 1);
-    nextBtnState(false);
-    setStopPage(stopPage - pageLimit);
-
-    api.getPrevPageStack(stopPage - pageLimit).then((res) => {
-      try {
-        let responseContainer = res.data.data.sort(
-          (argOne, argTwo) => parseInt(argOne.eid) - parseInt(argTwo.eid)
-        );
+    if (isSorted) {
+      console.log("Calling prev from sorted");
+      api.getSortedPrevPageStack(searchNextPage).then((res) => {
+        searchNextPage = searchNextPage - pageLimit;
+        let responseContainer = res.data.data;
+        console.log("->>>>", responseContainer);
         setEmpData(responseContainer);
-      } catch (err) {
-        console.log("Not found", err);
-      }
-      res.data.data.map((val) => {
-        if (parseInt(val.eid) === 1) prevBtnState(true);
+        nextBtnState(false);
+        setNext(next - 1);
+        if (searchNextPage === 0) {
+          prevBtnState(true);
+        }
       });
-    });
+    } else if (inpLen) {
+      console.log("Calling prev from search");
+      api.getPrevSearchPageStack(searchNextPage).then((res) => {
+        searchNextPage = searchNextPage - pageLimit;
+        let responseContainer = res.data.data;
+        setEmpData(responseContainer);
+        nextBtnState(false);
+        setNext(next - 1);
+        if (searchNextPage === 0) {
+          prevBtnState(true);
+        }
+      });
+    } else {
+      console.log("Calling prev from normal");
+      setNext(next - 1);
+      nextBtnState(false);
+      setStopPage(stopPage - pageLimit);
+
+      api.getPrevPageStack(stopPage - pageLimit).then((res) => {
+        try {
+          let responseContainer = res.data.data.sort(
+            (argOne, argTwo) => parseInt(argOne.eid) - parseInt(argTwo.eid)
+          );
+          setEmpData(responseContainer);
+        } catch (err) {
+          console.log("Not found", err);
+        }
+        res.data.data.map((val) => {
+          if (parseInt(val.eid) === 1) prevBtnState(true);
+        });
+      });
+    }
   };
 
   const sortAge = (e) => {
@@ -173,6 +250,9 @@ export default function CustomizedTables() {
     api.getSortedSalary(e.target.value).then((res) => {
       try {
         let responseContainer = res.data.data;
+        console.log(responseContainer);
+        setSorted(true);
+
         setEmpData(responseContainer);
       } catch (err) {
         console.log("Not found", err);
@@ -207,8 +287,12 @@ export default function CustomizedTables() {
                 align="center"
                 style={{ backgroundColor: "white" }}
               >
-                <select onChange={sortAge} style={inputBox}>
-                  <option value="none" selected disabled hidden>
+                <select
+                  defaultValue={"DEFAULT"}
+                  onChange={sortAge}
+                  style={inputBox}
+                >
+                  <option value="DEFAULT" disabled hidden>
                     Filter salary
                   </option>
                   <option value="lowToHigh">Min to Max</option>
